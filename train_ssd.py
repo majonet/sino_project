@@ -97,6 +97,7 @@ parser.add_argument('--use_cuda', default=True, type=str2bool,
 parser.add_argument('--checkpoint_folder', default='models/',
                     help='Directory for saving checkpoint models')
 
+parser.add_argument('--optimizer', default='sgd', type=str, help='Optimizer to use: sgd, adam, adamw, rmsprop')
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -319,7 +320,17 @@ if __name__ == '__main__':
         logging.fatal(f"Unsupported Scheduler: {args.scheduler}.")
         parser.print_help(sys.stderr)
         sys.exit(1)
+    # ////////////////////////////////////////////////////////
+    if args.optimizer == 'adam':
+    optimizer = torch.optim.Adam(net.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    elif args.optimizer == 'adamw':
+        optimizer = torch.optim.AdamW(net.parameters(), lr=args.lr, weight_decay=args.weight_decay)
+    elif args.optimizer == 'rmsprop':
+        optimizer = torch.optim.RMSprop(net.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
+    else:
+        optimizer = torch.optim.SGD(net.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
 
+    # ////////////////////////////////////////////////////////
     logging.info(f"Start training from epoch {last_epoch + 1}.")
     for epoch in range(last_epoch + 1, args.num_epochs):
         scheduler.step()
