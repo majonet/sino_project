@@ -28,58 +28,57 @@ import torch.nn as nn
 from vision.ssd.ssd import SSD
 from vision.ssd.config import mobilenetv1_ssd_config
 from vision.ssd.mobilenetv1_ssd import create_mobilenetv1_ssd  # or vgg_ssd
+from vision.ssd.mobilenet_v2_ssd_lite import create_mobilenetv2_ssd_lite
+from vision.ssd.ssd import SSD
+import torch.nn as nn
 
-class CustomSSD(SSD):
-    def __init__(self, base_net, source_layer_add_ons, extras,
-                 classification_headers, regression_headers, num_classes):
-        super().__init__(base_net, source_layer_add_ons, extras,
-                         classification_headers, regression_headers)
-        
-        # === Extra Conv layers ===
-        self.extra_convs = nn.Sequential(
-            nn.Conv2d(1024, 512, kernel_size=3, padding=1),
+# file: vision/ssd/custom_mobilenetv2_ssd.py
+
+import torch
+import torch.nn as nn
+from vision.ssd.mobilenet_v2_ssd_lite import create_mobilenetv2_ssd_lite
+
+class CustomMobileNetV2SSD(nn.Module):
+    def __init__(self, num_classes, width_mult=1.0):
+        super().__init__()
+        # Load base MobileNetV2 SSD Lite
+        self.base_ssd = create_mobilenetv2_ssd_lite(num_classes, width_mult=width_mult)
+
+        # Extra Conv layers
+        self.extra_conv = nn.Sequential(
+            nn.Conv2d(1280, 512, kernel_size=3, padding=1),  # Conv1
             nn.ReLU(inplace=True),
-            nn.Conv2d(512, 256, kernel_size=3, padding=1),
+            nn.Conv2d(512, 256, kernel_size=3, padding=1),   # Conv2
             nn.ReLU(inplace=True),
-            nn.Conv2d(256, 128, kernel_size=3, padding=1),
+            nn.Conv2d(256, 128, kernel_size=3, padding=1),   # Conv3
             nn.ReLU(inplace=True)
         )
 
-        # === Dense + BatchNorm + Output ===
-        # Adjust size according to your feature map (19x19 for 300px SSD)
+        # Dense + BatchNorm + Output
         self.fc_layers = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(128 * 19 * 19, 512),   # Dense layer 1
-            nn.BatchNorm1d(512),            # BatchNorm
+            nn.Linear(128 * 7 * 7, 512),  # Dense1
             nn.ReLU(inplace=True),
-            nn.Linear(512, 128),            # Dense layer 2
+            nn.Linear(512, 128),          # Dense2
+            nn.BatchNorm1d(128),
             nn.ReLU(inplace=True),
-            nn.Linear(128, num_classes)     # Output layer
+            nn.Linear(128, num_classes)   # Output layer
         )
 
-    def forward(self, images):
-        confidences, locations = super().forward(images)
+    def forward(self, x):
+        # Forward through base SSD
+        confidences, locations = self.base_ssd(x)
 
-        # Run extra layers
-        # NOTE: We use images again for demonstration
-        # In real use, you might want to take the last feature map
-        x = images
-        x = self.extra_convs(x)
-        extra_output = self.fc_layers(x)
+        # Pass feature map from the last base layer to extra convs
+        if hasattr(self.base_ssd.base_net, 'features'):
+            features = self.base_ssd.base_net.features(x)
+        else:
+            raise ValueError("Can't access base features from MobileNetV2 SSD Lite.")
 
-        return confidences, locations, extra_output
+        features = self.extra_conv(features)
+        output_logits = self.fc_layers(features)
 
-
-def create_custom_ssd(num_classes):
-    # Create pretrained MobileNet SSD
-    net = create_mobilenetv1_ssd(num_classes)
-    
-    return CustomSSD(net.base_net,
-                     net.source_layer_add_ons,
-                     net.extras,
-                     net.classification_headers,
-                     net.regression_headers,
-                     num_classes)
+        return confidences, locations, output_logits
 
 
 parser = argparse.ArgumentParser(
@@ -244,8 +243,9 @@ if __name__ == '__main__':
         create_net = create_squeezenet_ssd_lite
         config = squeezenet_ssd_config
     elif args.net == 'mb2-ssd-lite':
-        create_net = lambda num: create_mobilenetv2_ssd_lite(num, width_mult=args.mb2_width_mult)
+        create_net = lambda num: CustomMobileNetV2SSD(num, width_mult=args.mb2_width_mult)
         config = mobilenetv1_ssd_config
+
     elif args.net == 'mb3-large-ssd-lite':
         create_net = lambda num: create_mobilenetv3_large_ssd_lite(num)
         config = mobilenetv1_ssd_config
