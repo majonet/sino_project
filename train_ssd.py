@@ -43,6 +43,7 @@ class CustomMobileNetV2SSD(nn.Module):
         super().__init__()
         # Load base MobileNetV2 SSD Lite
         self.base_ssd = create_mobilenetv2_ssd_lite(num_classes, width_mult=width_mult)
+        self.base_net = self.base_ssd.base_net  # now training script sees it
 
         # Extra Conv layers
         self.extra_conv = nn.Sequential(
