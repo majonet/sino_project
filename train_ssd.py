@@ -37,49 +37,69 @@ import torch.nn as nn
 import torch
 import torch.nn as nn
 from vision.ssd.mobilenet_v2_ssd_lite import create_mobilenetv2_ssd_lite
+# vision/ssd/custom_mobilenetv2_ssd.py
+import torch
+import torch.nn as nn
+from vision.ssd.mobilenet_v2_ssd_lite import create_mobilenetv2_ssd_lite
 
 class CustomMobileNetV2SSD(nn.Module):
     def __init__(self, num_classes, width_mult=1.0):
         super().__init__()
-        # Load base MobileNetV2 SSD Lite
+        # Load base pretrained SSD model
         self.base_ssd = create_mobilenetv2_ssd_lite(num_classes, width_mult=width_mult)
-        self.base_net = self.base_ssd.base_net  # now training script sees it
 
-        # Extra Conv layers
+        # === Forward important attributes so training script works ===
+        self.base_net = self.base_ssd.base_net
+        self.source_layer_add_ons = self.base_ssd.source_layer_add_ons
+        self.extras = self.base_ssd.extras
+        self.regression_headers = self.base_ssd.regression_headers
+        self.classification_headers = self.base_ssd.classification_headers
+
+        # === Extra Conv layers ===
         self.extra_conv = nn.Sequential(
-            nn.Conv2d(1280, 512, kernel_size=3, padding=1),  # Conv1
+            nn.Conv2d(1280, 512, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
-            nn.Conv2d(512, 256, kernel_size=3, padding=1),   # Conv2
+            nn.Conv2d(512, 256, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
-            nn.Conv2d(256, 128, kernel_size=3, padding=1),   # Conv3
+            nn.Conv2d(256, 128, kernel_size=3, padding=1),
             nn.ReLU(inplace=True)
         )
 
-        # Dense + BatchNorm + Output
+        # === Dense + BatchNorm + Output ===
         self.fc_layers = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(128 * 7 * 7, 512),  # Dense1
+            nn.Linear(128 * 7 * 7, 512),
             nn.ReLU(inplace=True),
-            nn.Linear(512, 128),          # Dense2
+            nn.Linear(512, 128),
             nn.BatchNorm1d(128),
             nn.ReLU(inplace=True),
-            nn.Linear(128, num_classes)   # Output layer
+            nn.Linear(128, num_classes)
         )
 
     def forward(self, x):
-        # Forward through base SSD
+        # SSD forward
         confidences, locations = self.base_ssd(x)
 
-        # Pass feature map from the last base layer to extra convs
-        if hasattr(self.base_ssd.base_net, 'features'):
-            features = self.base_ssd.base_net.features(x)
-        else:
-            raise ValueError("Can't access base features from MobileNetV2 SSD Lite.")
-
+        # Extra layers forward
+        features = self.base_net.features(x)
         features = self.extra_conv(features)
         output_logits = self.fc_layers(features)
 
         return confidences, locations, output_logits
+
+    # Allow loading/saving same as base SSD
+    def init_from_base_net(self, model_path):
+        self.base_ssd.init_from_base_net(model_path)
+
+    def init_from_pretrained_ssd(self, model_path):
+        self.base_ssd.init_from_pretrained_ssd(model_path)
+
+    def load(self, model_path):
+        self.base_ssd.load(model_path)
+
+    def save(self, model_path):
+        self.base_ssd.save(model_path)
+
 
 
 parser = argparse.ArgumentParser(
