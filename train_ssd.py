@@ -23,6 +23,64 @@ from vision.ssd.config import vgg_ssd_config
 from vision.ssd.config import mobilenetv1_ssd_config
 from vision.ssd.config import squeezenet_ssd_config
 from vision.ssd.data_preprocessing import TrainAugmentation, TestTransform
+import torch
+import torch.nn as nn
+from vision.ssd.ssd import SSD
+from vision.ssd.config import mobilenetv1_ssd_config
+from vision.ssd.mobilenetv1_ssd import create_mobilenetv1_ssd  # or vgg_ssd
+
+class CustomSSD(SSD):
+    def __init__(self, base_net, source_layer_add_ons, extras,
+                 classification_headers, regression_headers, num_classes):
+        super().__init__(base_net, source_layer_add_ons, extras,
+                         classification_headers, regression_headers)
+        
+        # === Extra Conv layers ===
+        self.extra_convs = nn.Sequential(
+            nn.Conv2d(1024, 512, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(512, 256, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(256, 128, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True)
+        )
+
+        # === Dense + BatchNorm + Output ===
+        # Adjust size according to your feature map (19x19 for 300px SSD)
+        self.fc_layers = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(128 * 19 * 19, 512),   # Dense layer 1
+            nn.BatchNorm1d(512),            # BatchNorm
+            nn.ReLU(inplace=True),
+            nn.Linear(512, 128),            # Dense layer 2
+            nn.ReLU(inplace=True),
+            nn.Linear(128, num_classes)     # Output layer
+        )
+
+    def forward(self, images):
+        confidences, locations = super().forward(images)
+
+        # Run extra layers
+        # NOTE: We use images again for demonstration
+        # In real use, you might want to take the last feature map
+        x = images
+        x = self.extra_convs(x)
+        extra_output = self.fc_layers(x)
+
+        return confidences, locations, extra_output
+
+
+def create_custom_ssd(num_classes):
+    # Create pretrained MobileNet SSD
+    net = create_mobilenetv1_ssd(num_classes)
+    
+    return CustomSSD(net.base_net,
+                     net.source_layer_add_ons,
+                     net.extras,
+                     net.classification_headers,
+                     net.regression_headers,
+                     num_classes)
+
 
 parser = argparse.ArgumentParser(
     description='Single Shot MultiBox Detector Training With Pytorch')
@@ -194,6 +252,10 @@ if __name__ == '__main__':
     elif args.net == 'mb3-small-ssd-lite':
         create_net = lambda num: create_mobilenetv3_small_ssd_lite(num)
         config = mobilenetv1_ssd_config
+    elif args.net == 'custom-ssd':
+        create_net = create_custom_ssd
+        config = mobilenetv1_ssd_config
+
     else:
         logging.fatal("The net type is wrong.")
         parser.print_help(sys.stderr)
