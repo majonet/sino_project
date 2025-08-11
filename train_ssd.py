@@ -250,7 +250,7 @@ if __name__ == '__main__':
     min_loss = -10000.0
     last_epoch = -1
 
-    base_net_lr = args.base_net_lr if args.base_net_lr is not None else args.lr
+    # base_net_lr = args.base_net_lr if args.base_net_lr is not None else args.lr
     extra_layers_lr = args.extra_layers_lr if args.extra_layers_lr is not None else args.lr
     if args.freeze_base_net:
         logging.info("Freeze base net.")
@@ -275,7 +275,7 @@ if __name__ == '__main__':
         logging.info("Freeze all the layers except prediction heads.")
     else:
         params = [
-            {'params': net.base_net.parameters(), 'lr': base_net_lr},
+            
             {'params': itertools.chain(
                 net.source_layer_add_ons.parameters(),
                 net.extras.parameters()
@@ -304,8 +304,8 @@ if __name__ == '__main__':
                              center_variance=0.1, size_variance=0.2, device=DEVICE)
     optimizer = torch.optim.SGD(params, lr=args.lr, momentum=args.momentum,
                                 weight_decay=args.weight_decay)
-    logging.info(f"Learning rate: {args.lr}, Base net learning rate: {base_net_lr}, "
-                 + f"Extra Layers learning rate: {extra_layers_lr}.")
+    # logging.info(f"Learning rate: {args.lr}, Base net learning rate: {base_net_lr}, "
+    #              + f"Extra Layers learning rate: {extra_layers_lr}.")
 
     if args.scheduler == 'multi-step':
         logging.info("Uses MultiStepLR scheduler.")
