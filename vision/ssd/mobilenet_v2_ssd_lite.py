@@ -7,7 +7,40 @@ from .ssd import SSD, GraphPath
 from .predictor import Predictor
 from .config import mobilenetv1_ssd_config as config
 
+import torch
+import torch.nn as nn
 
+class SimpleSSD(nn.Module):
+    def __init__(self, num_classes):
+        super(SimpleSSD, self).__init__()
+        # Simple feature extractor
+        self.features = nn.Sequential(
+            nn.Conv2d(3, 32, kernel_size=3, stride=2, padding=1),  # downsample
+            nn.ReLU(inplace=True),
+            nn.Conv2d(32, 64, kernel_size=3, stride=2, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1),
+            nn.ReLU(inplace=True)
+        )
+
+        # Detection heads
+        self.loc_head = nn.Conv2d(128, 4 * 4, kernel_size=3, padding=1)   # 4 boxes per location
+        self.cls_head = nn.Conv2d(128, 4 * num_classes, kernel_size=3, padding=1)
+
+    def forward(self, x):
+        x = self.features(x)
+        locs = self.loc_head(x)
+        confs = self.cls_head(x)
+
+        # reshape outputs for SSD format
+        locs = locs.permute(0, 2, 3, 1).contiguous()
+        confs = confs.permute(0, 2, 3, 1).contiguous()
+
+        return locs, confs
+
+def create_simple_ssd(num_classes):
+    return SimpleSSD(num_classes)
+# -----------------------------------------------------------------------------------------------------------
 def SeperableConv2d(in_channels, out_channels, kernel_size=1, stride=1, padding=0, onnx_compatible=False):
     """Replace Conv2d with a depthwise Conv2d and Pointwise Conv2d.
     """
