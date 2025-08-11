@@ -23,84 +23,6 @@ from vision.ssd.config import vgg_ssd_config
 from vision.ssd.config import mobilenetv1_ssd_config
 from vision.ssd.config import squeezenet_ssd_config
 from vision.ssd.data_preprocessing import TrainAugmentation, TestTransform
-import torch
-import torch.nn as nn
-from vision.ssd.ssd import SSD
-from vision.ssd.config import mobilenetv1_ssd_config
-from vision.ssd.mobilenetv1_ssd import create_mobilenetv1_ssd  # or vgg_ssd
-from vision.ssd.mobilenet_v2_ssd_lite import create_mobilenetv2_ssd_lite
-from vision.ssd.ssd import SSD
-import torch.nn as nn
-
-# file: vision/ssd/custom_mobilenetv2_ssd.py
-
-import torch
-import torch.nn as nn
-from vision.ssd.mobilenet_v2_ssd_lite import create_mobilenetv2_ssd_lite
-# vision/ssd/custom_mobilenetv2_ssd.py
-import torch
-import torch.nn as nn
-from vision.ssd.mobilenet_v2_ssd_lite import create_mobilenetv2_ssd_lite
-
-class CustomMobileNetV2SSD(nn.Module):
-    def __init__(self, num_classes, width_mult=1.0):
-        super().__init__()
-        # Load base pretrained SSD model
-        self.base_ssd = create_mobilenetv2_ssd_lite(num_classes, width_mult=width_mult)
-
-        # === Forward important attributes so training script works ===
-        self.base_net = self.base_ssd.base_net
-        self.source_layer_add_ons = self.base_ssd.source_layer_add_ons
-        self.extras = self.base_ssd.extras
-        self.regression_headers = self.base_ssd.regression_headers
-        self.classification_headers = self.base_ssd.classification_headers
-
-        # === Extra Conv layers ===
-        self.extra_conv = nn.Sequential(
-            nn.Conv2d(1280, 512, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(512, 256, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(256, 128, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True)
-        )
-
-        # === Dense + BatchNorm + Output ===
-        self.fc_layers = nn.Sequential(
-            nn.Flatten(),
-            nn.Linear(128 * 7 * 7, 512),
-            nn.ReLU(inplace=True),
-            nn.Linear(512, 128),
-            nn.BatchNorm1d(128),
-            nn.ReLU(inplace=True),
-            nn.Linear(128, num_classes)
-        )
-
-    def forward(self, x):
-        # SSD forward
-        confidences, locations = self.base_ssd(x)
-
-        # Extra layers forward
-        features = self.base_net.features(x)
-        features = self.extra_conv(features)
-        output_logits = self.fc_layers(features)
-
-        return confidences, locations, output_logits
-
-    # Allow loading/saving same as base SSD
-    def init_from_base_net(self, model_path):
-        self.base_ssd.init_from_base_net(model_path)
-
-    def init_from_pretrained_ssd(self, model_path):
-        self.base_ssd.init_from_pretrained_ssd(model_path)
-
-    def load(self, model_path):
-        self.base_ssd.load(model_path)
-
-    def save(self, model_path):
-        self.base_ssd.save(model_path)
-
-
 
 parser = argparse.ArgumentParser(
     description='Single Shot MultiBox Detector Training With Pytorch')
@@ -175,7 +97,6 @@ parser.add_argument('--use_cuda', default=True, type=str2bool,
 parser.add_argument('--checkpoint_folder', default='models/',
                     help='Directory for saving checkpoint models')
 
-parser.add_argument('--optimizer', default='sgd', type=str, help='Optimizer to use: sgd, adam, adamw, rmsprop')
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO,
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -264,19 +185,14 @@ if __name__ == '__main__':
         create_net = create_squeezenet_ssd_lite
         config = squeezenet_ssd_config
     elif args.net == 'mb2-ssd-lite':
-        create_net = lambda num: CustomMobileNetV2SSD(num, width_mult=args.mb2_width_mult)
+        create_net = lambda num: create_mobilenetv2_ssd_lite(num, width_mult=args.mb2_width_mult)
         config = mobilenetv1_ssd_config
-
     elif args.net == 'mb3-large-ssd-lite':
         create_net = lambda num: create_mobilenetv3_large_ssd_lite(num)
         config = mobilenetv1_ssd_config
     elif args.net == 'mb3-small-ssd-lite':
         create_net = lambda num: create_mobilenetv3_small_ssd_lite(num)
         config = mobilenetv1_ssd_config
-    elif args.net == 'custom-ssd':
-        create_net = create_custom_ssd
-        config = mobilenetv1_ssd_config
-
     else:
         logging.fatal("The net type is wrong.")
         parser.print_help(sys.stderr)
@@ -403,16 +319,6 @@ if __name__ == '__main__':
         logging.fatal(f"Unsupported Scheduler: {args.scheduler}.")
         parser.print_help(sys.stderr)
         sys.exit(1)
-     # ////////////////////////////////////////////////////////
-    if args.optimizer == 'adam':
-        optimizer = torch.optim.Adam(params, lr=args.lr, weight_decay=args.weight_decay)
-    elif args.optimizer == 'adamw':
-        optimizer = torch.optim.AdamW(params, lr=args.lr, weight_decay=args.weight_decay)
-    elif args.optimizer == 'rmsprop':
-        optimizer = torch.optim.RMSprop(params, lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
-    else:
-        optimizer = torch.optim.SGD(params, lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
-# ////////////////////////////////////////////////////////
 
     logging.info(f"Start training from epoch {last_epoch + 1}.")
     for epoch in range(last_epoch + 1, args.num_epochs):
