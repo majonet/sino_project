@@ -14,10 +14,10 @@ def SeperableConv2d(in_channels, out_channels, kernel_size=1, stride=1, padding=
     ReLU = nn.ReLU if onnx_compatible else nn.ReLU6
     return Sequential(
         Conv2d(in_channels=in_channels, out_channels=in_channels, kernel_size=kernel_size,
-               groups=in_channels, stride=stride, padding=padding),
+               groups=in_channels, stride=stride, padding="same"),
         BatchNorm2d(in_channels),
         ReLU(),
-        Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=1),
+        Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size),
     )
 
 
@@ -39,19 +39,21 @@ def create_mobilenetv2_ssd_lite(num_classes, width_mult=1.0, use_batch_norm=True
     regression_headers = ModuleList([
         SeperableConv2d(in_channels=round(576 * width_mult), out_channels=6 * 4,
                         kernel_size=3, padding=1, onnx_compatible=False),
-        SeperableConv2d(in_channels=1280, out_channels=6 * 4, kernel_size=3, padding=1, onnx_compatible=False),
-        SeperableConv2d(in_channels=512, out_channels=6 * 4, kernel_size=3, padding=1, onnx_compatible=False),
-        SeperableConv2d(in_channels=256, out_channels=6 * 4, kernel_size=3, padding=1, onnx_compatible=False),
-        SeperableConv2d(in_channels=256, out_channels=6 * 4, kernel_size=3, padding=1, onnx_compatible=False),
+        SeperableConv2d(in_channels=1500, out_channels=6 * 4, kernel_size=5, padding=1, onnx_compatible=False),
+        SeperableConv2d(in_channels=800, out_channels=6 * 4, kernel_size=5, padding=1, onnx_compatible=False),
+        SeperableConv2d(in_channels=600, out_channels=6 * 4, kernel_size=5, padding=1, onnx_compatible=False),
+        SeperableConv2d(in_channels=300, out_channels=6 * 4, kernel_size=5, padding=1, onnx_compatible=False),
+        SeperableConv2d(in_channels=300, out_channels=6 * 4, kernel_size=5, padding=1, onnx_compatible=False),
         Conv2d(in_channels=64, out_channels=6 * 4, kernel_size=1),
     ])
 
     classification_headers = ModuleList([
         SeperableConv2d(in_channels=round(576 * width_mult), out_channels=6 * num_classes, kernel_size=3, padding=1),
-        SeperableConv2d(in_channels=1280, out_channels=6 * num_classes, kernel_size=3, padding=1),
-        SeperableConv2d(in_channels=512, out_channels=6 * num_classes, kernel_size=3, padding=1),
-        SeperableConv2d(in_channels=256, out_channels=6 * num_classes, kernel_size=3, padding=1),
-        SeperableConv2d(in_channels=256, out_channels=6 * num_classes, kernel_size=3, padding=1),
+        SeperableConv2d(in_channels=1500, out_channels=6 * num_classes, kernel_size=5, padding=1),
+        SeperableConv2d(in_channels=800, out_channels=6 * num_classes, kernel_size=5, padding=1),
+        SeperableConv2d(in_channels=800, out_channels=6 * num_classes, kernel_size=5, padding=1),
+        SeperableConv2d(in_channels=300, out_channels=6 * num_classes, kernel_size=5, padding=1),
+        SeperableConv2d(in_channels=300, out_channels=6 * num_classes, kernel_size=5, padding=1),
         Conv2d(in_channels=64, out_channels=6 * num_classes, kernel_size=1),
     ])
 
