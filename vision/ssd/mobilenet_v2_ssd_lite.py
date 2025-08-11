@@ -38,7 +38,7 @@ class SimpleSSD(nn.Module):
 
         return locs, confs
 
-def create_mobilenetv2_ssd_lite(num_classes):
+def create_mobilenetv2_ssd_lite(num_classes, width_mult=1.0, use_batch_norm=True, onnx_compatible=False, is_test=False):
     return SimpleSSD(num_classes)
 # -----------------------------------------------------------------------------------------------------------
 # def SeperableConv2d(in_channels, out_channels, kernel_size=1, stride=1, padding=0, onnx_compatible=False):
