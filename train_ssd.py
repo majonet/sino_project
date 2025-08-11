@@ -55,8 +55,8 @@ parser.add_argument('--weight_decay', default=5e-4, type=float,
                     help='Weight decay for SGD')
 parser.add_argument('--gamma', default=0.1, type=float,
                     help='Gamma update for SGD')
-parser.add_argument('--base_net_lr', default=None, type=float,
-                    help='initial learning rate for base net.')
+# parser.add_argument('--base_net_lr', default=None, type=float,
+#                     help='initial learning rate for base net.')
 parser.add_argument('--extra_layers_lr', default=None, type=float,
                     help='initial learning rate for the layers not in base net and prediction heads.')
 
