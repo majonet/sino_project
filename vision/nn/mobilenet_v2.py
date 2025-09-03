@@ -116,7 +116,7 @@ class MobileNetV2(nn.Module):
             [6, 64, 4, 2],
             [6, 96, 3, 1],
             [6, 160, 3, 2],
-            [6, 320, 1, 1],
+            [6, 640, 1, 1],
         ]
 
         # building first layer
