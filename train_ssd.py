@@ -113,8 +113,8 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     running_loss = 0.0
     running_regression_loss = 0.0
     running_classification_loss = 0.0
-    print("Number of samples in dataset:", len(loader.dataset))
-    print("Number of batches per epoch:", len(loader))
+    # print("Number of samples in dataset:", len(loader.dataset))
+    # print("Number of batches per epoch:", len(loader))
     for i, data in enumerate(loader):
         images, boxes, labels = data
         images = images.to(device)
@@ -214,7 +214,8 @@ if __name__ == '__main__':
         if args.dataset_type == 'voc':
             dataset = VOCDataset(dataset_path, transform=train_transform,
                                  target_transform=target_transform)
-            print("my data_set is voc")
+            print("Number of samples in dataset:", len(dataset.dataset))
+            print("Number of batches per epoch:", len(dataset))
             label_file = os.path.join(args.checkpoint_folder, "voc-model-labels.txt")
             store_labels(label_file, dataset.class_names)
             num_classes = len(dataset.class_names)
