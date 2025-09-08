@@ -30,13 +30,11 @@ def create_mobilenetv2_ssd_lite(num_classes, width_mult=1.0, use_batch_norm=True
         19,
     ]
     extras = ModuleList([
-    InvertedResidual(1280, 512, stride=2, expand_ratio=0.2),
-    InvertedResidual(512, 256, stride=2, expand_ratio=0.25),
-    InvertedResidual(256, 128, stride=2, expand_ratio=0.5),
-    InvertedResidual(128, 64, stride=2, expand_ratio=0.25),
-    InvertedResidual(64, 32, stride=2, expand_ratio=0.25),
-               ])
-
+        InvertedResidual(1280, 512, stride=2, expand_ratio=0.2),
+        InvertedResidual(512, 256, stride=2, expand_ratio=0.25),
+        InvertedResidual(256, 256, stride=2, expand_ratio=0.5),
+        InvertedResidual(256, 64, stride=2, expand_ratio=0.25)
+    ])
 
     regression_headers = ModuleList([
         SeperableConv2d(in_channels=round(576 * width_mult), out_channels=6 * 4,
