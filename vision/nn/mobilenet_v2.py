@@ -71,14 +71,19 @@ class InvertedResidual(nn.Module):
             if use_batch_norm:
                 self.conv = nn.Sequential(
                     # pw
+                    
                     nn.Conv2d(inp, hidden_dim, 1, 1, 0, bias=False),
                     nn.BatchNorm2d(hidden_dim),
                     ReLU(inplace=True),
+
                     # dw
+
                     nn.Conv2d(hidden_dim, hidden_dim, 3, stride, 1, groups=hidden_dim, bias=False),
                     nn.BatchNorm2d(hidden_dim),
                     ReLU(inplace=True),
+
                     # pw-linear
+
                     nn.Conv2d(hidden_dim, oup, 1, 1, 0, bias=False),
                     nn.BatchNorm2d(oup),
                 )
@@ -110,14 +115,14 @@ class MobileNetV2(nn.Module):
         last_channel = 1280
         interverted_residual_setting = [
             # t, c, n, s
-        [1, 16, 1, 1],
-        [6, 24, 2, 2],
-        [6, 32, 3, 2],
-        [6, 64, 4, 2],
-        [6, 96, 3, 1],
-        [6, 160, 3, 2],
-        [6, 320, 1, 1],
-                      ]
+            [1, 16, 1, 1],
+            [6, 24, 2, 2],
+            [6, 32, 3, 2],
+            [6, 64, 4, 2],
+            [6, 96, 3, 1],
+            [6, 160, 3, 2],
+            [6, 320, 1, 1],
+        ]
 
         # building first layer
         assert input_size % 32 == 0
