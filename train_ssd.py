@@ -113,8 +113,8 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     running_loss = 0.0
     running_regression_loss = 0.0
     running_classification_loss = 0.0
-    # print("Number of samples in dataset:", len(loader.dataset))
-    # print("Number of batches per epoch:", len(loader))
+    print("Number of samples in dataset:", len(loader.dataset))
+    print("Number of batches per epoch:", len(loader))
     for i, data in enumerate(loader):
         images, boxes, labels = data
         images = images.to(device)
