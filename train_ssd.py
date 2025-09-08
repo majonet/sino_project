@@ -115,6 +115,10 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     running_classification_loss = 0.0
     print("Number of samples in dataset:", len(loader.dataset))
     print("Number of batches per epoch:", len(loader))
+    num_params = sum(p.numel() for p in net.parameters())
+    print(f"Total parameters: {num_params}")
+    num_trainable = sum(p.numel() for p in net.parameters() if p.requires_grad)
+    print(f"Trainable parameters: {num_trainable}")
     for i, data in enumerate(loader):
         images, boxes, labels = data
         images = images.to(device)
