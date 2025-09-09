@@ -43,6 +43,7 @@ def create_mobilenetv2_ssd_lite(num_classes, width_mult=1.0, use_batch_norm=True
         SeperableConv2d(in_channels=512, out_channels=6 * 4, kernel_size=3, padding=1, onnx_compatible=False),
         SeperableConv2d(in_channels=256, out_channels=6 * 4, kernel_size=3, padding=1, onnx_compatible=False),
         SeperableConv2d(in_channels=256, out_channels=6 * 4, kernel_size=3, padding=1, onnx_compatible=False),
+        SeperableConv2d(in_channels=256, out_channels=6 * 4, kernel_size=3, padding=1, onnx_compatible=False),
         Conv2d(in_channels=64, out_channels=6 * 4, kernel_size=1),
     ])
 
@@ -50,6 +51,7 @@ def create_mobilenetv2_ssd_lite(num_classes, width_mult=1.0, use_batch_norm=True
         SeperableConv2d(in_channels=round(576 * width_mult), out_channels=6 * num_classes, kernel_size=3, padding=1),
         SeperableConv2d(in_channels=1280, out_channels=6 * num_classes, kernel_size=3, padding=1),
         SeperableConv2d(in_channels=512, out_channels=6 * num_classes, kernel_size=3, padding=1),
+        SeperableConv2d(in_channels=256, out_channels=6 * num_classes, kernel_size=3, padding=1),
         SeperableConv2d(in_channels=256, out_channels=6 * num_classes, kernel_size=3, padding=1),
         SeperableConv2d(in_channels=256, out_channels=6 * num_classes, kernel_size=3, padding=1),
         Conv2d(in_channels=64, out_channels=6 * num_classes, kernel_size=1),
