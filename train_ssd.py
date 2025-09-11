@@ -153,7 +153,7 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
             running_regression_loss = 0.0
             running_classification_loss = 0.0
 
-
+    print(loss)
 def test(loader, net, criterion, device):
     print("Number of samples in dataset:", len(loader.dataset))
     print("Number of batches per epoch:", len(loader))
