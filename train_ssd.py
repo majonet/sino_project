@@ -110,13 +110,14 @@ if args.use_cuda and torch.cuda.is_available():
 
 def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     n_batches = len(loader) // 2   # take one quarter
+    train_loader=islice(loader, n_batches)
     net.train(True)
     running_loss = 0.0
     running_regression_loss = 0.0
     running_classification_loss = 0.0
     #///////////////////////////////////////////////////
-    print("Number of samples in dataset:", len(loader.dataset))
-    print("Number of batches per epoch:", len(loader))
+    print("Number of samples in dataset:", len(train_loader.dataset))
+    print("Number of batches per epoch:", len(train_loader))
     # for param in net.parameters():
     #             param.requires_grad = False
     num_params = sum(p.numel() for p in net.parameters())
@@ -124,7 +125,7 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     num_trainable = sum(p.numel() for p in net.parameters() if p.requires_grad)
     print(f"Trainable parameters: {num_trainable}")
     #//////////////////////////////////////////////////
-    for i, data in enumerate(islice(loader, n_batches)):
+    for i, data in enumerate(train_loader):
         images, boxes, labels = data
         images = images.to(device)
         boxes = boxes.to(device)
@@ -156,15 +157,16 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
 
     print(loss)
 def test(loader, net, criterion, device):
-    print("Number of samples in dataset:", len(loader.dataset))
-    print("Number of batches per epoch:", len(loader))
+    n_batches = len(loader) // 11
+    train_loader=islice(loader, n_batches)
+    print("Number of samples in dataset:", len(train_loader.dataset))
+    print("Number of batches per epoch:", len(train_loader))
     net.eval()
     running_loss = 0.0
     running_regression_loss = 0.0
     running_classification_loss = 0.0
     num = 0
-    n_batches = len(loader) // 11
-    for _, data in enumerate(islice(loader, n_batches)):
+    for _, data in enumerate(train_loader):
         images, boxes, labels = data
         images = images.to(device)
         boxes = boxes.to(device)
