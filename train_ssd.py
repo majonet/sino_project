@@ -116,8 +116,8 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     running_regression_loss = 0.0
     running_classification_loss = 0.0
     #///////////////////////////////////////////////////
-    print("Number of samples in dataset:", len(train_loader.dataset))
-    print("Number of batches per epoch:", len(train_loader))
+    # print("Number of samples in dataset:",)
+    print("Number of batches per epoch:", n_batches)
     # for param in net.parameters():
     #             param.requires_grad = False
     num_params = sum(p.numel() for p in net.parameters())
@@ -159,8 +159,8 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
 def test(loader, net, criterion, device):
     n_batches = len(loader) // 11
     train_loader=islice(loader, n_batches)
-    print("Number of samples in dataset:", len(train_loader.dataset))
-    print("Number of batches per epoch:", len(train_loader))
+    # print("Number of samples in dataset:", len(train_loader.dataset))
+    print("Number of batches per epoch:", n_batches)
     net.eval()
     running_loss = 0.0
     running_regression_loss = 0.0
