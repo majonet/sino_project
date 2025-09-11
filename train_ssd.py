@@ -3,7 +3,7 @@ import os
 import logging
 import sys
 import itertools
-
+from itertools import islice
 import torch
 from torch.utils.data import DataLoader, ConcatDataset
 from torch.optim.lr_scheduler import CosineAnnealingLR, MultiStepLR
@@ -109,6 +109,7 @@ if args.use_cuda and torch.cuda.is_available():
 
 
 def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
+    n_batches = len(loader) // 2   # take one quarter
     net.train(True)
     running_loss = 0.0
     running_regression_loss = 0.0
@@ -123,7 +124,7 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     num_trainable = sum(p.numel() for p in net.parameters() if p.requires_grad)
     print(f"Trainable parameters: {num_trainable}")
     #//////////////////////////////////////////////////
-    for i, data in enumerate(loader):
+    for i, data in enumerate(islice(loader, n_batches)):
         images, boxes, labels = data
         images = images.to(device)
         boxes = boxes.to(device)
@@ -162,7 +163,8 @@ def test(loader, net, criterion, device):
     running_regression_loss = 0.0
     running_classification_loss = 0.0
     num = 0
-    for _, data in enumerate(loader):
+    n_batches = len(loader) // 11
+    for _, data in enumerate(islice(loader, n_batches)):
         images, boxes, labels = data
         images = images.to(device)
         boxes = boxes.to(device)
