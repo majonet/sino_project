@@ -163,7 +163,7 @@ def test(loader, net, criterion, device):
     device = torch.device("cuda")
     num_classes = 21 
     net = create_mobilenetv2_ssd_lite(num_classes, is_test=True)
-    net.load_state_dict(torch.load("/kaggle/input/python-torch-files/mb2-ssd-lite-Epoch-5-Loss-22.16368144947094.pth", map_location=device))
+    net.load_state_dict(torch.load("/kaggle/input/python-torch-files/mb2-ssd-lite-Epoch-60-Loss-3.8804478278526893.pth", map_location=device))
     net = net.to(device)
     num_params = sum(p.numel() for p in net.parameters())
     print(f"Total parameters: {num_params}")
