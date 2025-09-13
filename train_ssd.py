@@ -23,6 +23,38 @@ from vision.ssd.config import vgg_ssd_config
 from vision.ssd.config import mobilenetv1_ssd_config
 from vision.ssd.config import squeezenet_ssd_config
 from vision.ssd.data_preprocessing import TrainAugmentation, TestTransform
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+def criterion_1(confidence, locations, labels, boxes):
+    """
+    confidence: (batch_size, num_priors, num_classes) - predicted class scores
+    locations: (batch_size, num_priors, 4) - predicted box offsets
+    labels: (batch_size, num_priors) - ground truth class labels
+    boxes: (batch_size, num_priors, 4) - ground truth box coordinates
+    """
+    # 1. Classification loss (cross-entropy)
+    batch_size = confidence.size(0)
+    confidence = confidence.view(-1, confidence.size(-1))  # (batch_size*num_priors, num_classes)
+    labels = labels.view(-1)  # (batch_size*num_priors)
+    classification_loss = F.cross_entropy(confidence, labels, reduction='sum') / batch_size
+
+    # 2. Regression loss (Smooth L1 / Huber loss)
+    pos_mask = labels > 0  # positive priors
+    if pos_mask.sum() > 0:
+        predicted_boxes = locations[pos_mask]
+        true_boxes = boxes[pos_mask]
+        regression_loss = F.smooth_l1_loss(predicted_boxes, true_boxes, reduction='sum') / batch_size
+    else:
+        regression_loss = torch.tensor(0.0, device=locations.device)
+
+    return regression_loss, classification_loss
+
+# Usage example
+# confidence, locations = net(images)
+# regression_loss, classification_loss = criterion(confidence, locations, labels, boxes)
+# loss = regression_loss + classification_loss
 
 parser = argparse.ArgumentParser(
     description='Single Shot MultiBox Detector Training With Pytorch')
@@ -183,7 +215,7 @@ def test(loader, net, criterion, device):
 
         with torch.no_grad():
             confidence, locations = net(images)
-            regression_loss, classification_loss = criterion(confidence, locations, labels, boxes)
+            regression_loss, classification_loss = criterion_1(confidence, locations, labels, boxes)
             loss = regression_loss + classification_loss
 
         running_loss += loss.item()
