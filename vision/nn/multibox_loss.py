@@ -38,27 +38,29 @@ class MultiboxLoss(nn.Module):
             mask = box_utils.hard_negative_mining(loss, labels, self.neg_pos_ratio)
 
         # confidence = confidence[mask, :]
-        masked_labels = labels[mask]
-        masked_confidence = confidence[mask, :]
         #//////////////////////////////////////////////////////
-        print("labels", masked_labels )
-        print("labels", masked_labels .shape)
-        print(30*"----")
-        print("confidence",masked_confidence.shape)
+        # فقط همان prior هایی که در mask هستند
+        masked_labels = labels[mask]                 # shape: [num_selected]
+        masked_confidence = confidence[mask, :]      # shape: [num_selected, num_classes]
+        
+        # پیش‌بینی کلاس‌ها روی ماسک
         pred_classes = torch.argmax(masked_confidence, dim=1)
-        print("pred_classes",pred_classes)
-        print("pred_classes",pred_classes.shape)
+        
+        # دقت روی ماسک
         correct = (pred_classes == masked_labels)
-        print("\nCorrect mask:\n", correct.shape)
         accuracy = correct.sum().item() / correct.numel()
-        print("\nAccuracy:", accuracy)
-        confidence_flat = masked_confidence.view(-1, masked_confidence.size(-1))
-        labels_flat = labels.view(-1)
-        loss = F.cross_entropy(confidence_flat, labels_flat, reduction="mean")
-        print("\nCross-Entropy Loss:", loss.item())
-        print(30*"----")
+        
+        print("Masked labels shape:", masked_labels.shape)
+        print("Masked confidence shape:", masked_confidence.shape)
+        print("Masked pred_classes shape:", pred_classes.shape)
+        print("Masked Accuracy:", accuracy)
+        
+        # Cross-Entropy فقط روی prior های انتخاب شده
+        classification_loss = F.cross_entropy(masked_confidence, masked_labels, reduction="mean")
+        print("Masked Cross-Entropy Loss:", classification_loss.item())
+
         #/////////////////////////////////////////////////////
-        classification_loss = F.cross_entropy(confidence[mask, :].reshape(-1, num_classes), labels[mask], size_average=False)
+        # classification_loss = F.cross_entropy(confidence[mask, :].reshape(-1, num_classes), labels[mask], size_average=False)
         pos_mask = labels > 0
         predicted_locations = predicted_locations[pos_mask, :].reshape(-1, 4)
         gt_locations = gt_locations[pos_mask, :].reshape(-1, 4)
