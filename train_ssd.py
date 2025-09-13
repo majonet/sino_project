@@ -189,6 +189,12 @@ def test(loader, net, criterion, device):
         running_loss += loss.item()
         running_regression_loss += regression_loss.item()
         running_classification_loss += classification_loss.item()
+    print(
+            f"Avg Total Loss: {running_loss / num:.4f} | "
+            f"Reg Loss: {running_regression_loss / num:.4f} | "
+            f"Cls Loss: {running_classification_loss / num:.4f}"
+           )
+   
     return running_loss / num, running_regression_loss / num, running_classification_loss / num
 
 
