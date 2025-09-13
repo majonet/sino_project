@@ -109,56 +109,66 @@ if args.use_cuda and torch.cuda.is_available():
 
 
 def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
-    n_batches = len(loader) // 2   # take one quarter
-    train_loader=islice(loader, n_batches)
-    net.train(True)
-    running_loss = 0.0
-    running_regression_loss = 0.0
-    running_classification_loss = 0.0
-    #///////////////////////////////////////////////////
-    # print("Number of samples in dataset:",)
-    print("Number of batches per epoch:", n_batches)
-    # for param in net.parameters():
-    #             param.requires_grad = False
-    num_params = sum(p.numel() for p in net.parameters())
-    print(f"Total parameters: {num_params}")
-    num_trainable = sum(p.numel() for p in net.parameters() if p.requires_grad)
-    print(f"Trainable parameters: {num_trainable}")
-    #//////////////////////////////////////////////////
-    for i, data in enumerate(train_loader):
-        images, boxes, labels = data
-        images = images.to(device)
-        boxes = boxes.to(device)
-        labels = labels.to(device)
+    # n_batches = len(loader) // 2   # take one quarter
+    # train_loader=islice(loader, n_batches)
+    # net.train(True)
+    # running_loss = 0.0
+    # running_regression_loss = 0.0
+    # running_classification_loss = 0.0
+    # #///////////////////////////////////////////////////
+    # # print("Number of samples in dataset:",)
+    # print("Number of batches per epoch:", n_batches)
+    # # for param in net.parameters():
+    # #             param.requires_grad = False
+    # num_params = sum(p.numel() for p in net.parameters())
+    # print(f"Total parameters: {num_params}")
+    # num_trainable = sum(p.numel() for p in net.parameters() if p.requires_grad)
+    # print(f"Trainable parameters: {num_trainable}")
+    # #//////////////////////////////////////////////////
+    # for i, data in enumerate(train_loader):
+    #     images, boxes, labels = data
+    #     images = images.to(device)
+    #     boxes = boxes.to(device)
+    #     labels = labels.to(device)
 
-        optimizer.zero_grad()
-        confidence, locations = net(images)
-        regression_loss, classification_loss = criterion(confidence, locations, labels, boxes)  # TODO CHANGE BOXES
-        loss = regression_loss + classification_loss
-        loss.backward()
-        optimizer.step()
+    #     optimizer.zero_grad()
+    #     confidence, locations = net(images)
+    #     regression_loss, classification_loss = criterion(confidence, locations, labels, boxes)  # TODO CHANGE BOXES
+    #     loss = regression_loss + classification_loss
+    #     loss.backward()
+    #     optimizer.step()
 
-        running_loss += loss.item()
-        running_regression_loss += regression_loss.item()
-        running_classification_loss += classification_loss.item()
-        if i and i % debug_steps == 0:
-            avg_loss = running_loss / debug_steps
-            avg_reg_loss = running_regression_loss / debug_steps
-            avg_clf_loss = running_classification_loss / debug_steps
-            logging.info(
-                f"Epoch: {epoch}, Step: {i}, " +
-                f"Average Loss: {avg_loss:.4f}, " +
-                f"Average Regression Loss {avg_reg_loss:.4f}, " +
-                f"Average Classification Loss: {avg_clf_loss:.4f}"
-            )
-            running_loss = 0.0
-            running_regression_loss = 0.0
-            running_classification_loss = 0.0
+    #     running_loss += loss.item()
+    #     running_regression_loss += regression_loss.item()
+    #     running_classification_loss += classification_loss.item()
+    #     if i and i % debug_steps == 0:
+    #         avg_loss = running_loss / debug_steps
+    #         avg_reg_loss = running_regression_loss / debug_steps
+    #         avg_clf_loss = running_classification_loss / debug_steps
+    #         logging.info(
+    #             f"Epoch: {epoch}, Step: {i}, " +
+    #             f"Average Loss: {avg_loss:.4f}, " +
+    #             f"Average Regression Loss {avg_reg_loss:.4f}, " +
+    #             f"Average Classification Loss: {avg_clf_loss:.4f}"
+    #         )
+    #         running_loss = 0.0
+    #         running_regression_loss = 0.0
+    #         running_classification_loss = 0.0
 
-    print(loss)
+    # print(loss)
+    print("pass")
 def test(loader, net, criterion, device):
     n_batches = len(loader) // 11
     train_loader=islice(loader, n_batches)
+    VOC_CLASSES = [
+    "background", "aeroplane", "bicycle", "bird", "boat",
+    "bottle", "bus", "car", "cat", "chair",
+    "cow", "diningtable", "dog", "horse", "motorbike",
+    "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"
+    ]
+    
+    net = create_mobilenetv2_ssd_lite(len(VOC_CLASSES), is_test=True)
+    net.load(torch.load("models/mb2-ssd-lite-mp-0_686.pth"))
     # print("Number of samples in dataset:", len(train_loader.dataset))
     print("Number of batches per epoch:", n_batches)
     net.eval()
