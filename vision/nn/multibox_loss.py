@@ -38,19 +38,21 @@ class MultiboxLoss(nn.Module):
             mask = box_utils.hard_negative_mining(loss, labels, self.neg_pos_ratio)
 
         # confidence = confidence[mask, :]
+        masked_labels = labels[mask]
+        masked_confidence = confidence[mask, :]
         #//////////////////////////////////////////////////////
-        print("labels",labels)
-        print("labels",labels.shape)
+        print("labels", masked_labels )
+        print("labels", masked_labels .shape)
         print(30*"----")
-        print("confidence",confidence.shape)
-        pred_classes = torch.argmax(confidence, dim=2)
+        print("confidence",masked_confidence.shape)
+        pred_classes = torch.argmax(masked_confidence, dim=2)
         print("pred_classes",pred_classes)
         print("pred_classes",pred_classes.shape)
-        correct = (pred_classes == labels)
+        correct = (pred_classes == masked_labels)
         print("\nCorrect mask:\n", correct.shape)
         accuracy = correct.sum().item() / correct.numel()
         print("\nAccuracy:", accuracy)
-        confidence_flat = confidence.view(-1, confidence.size(-1))
+        confidence_flat = masked_confidence.view(-1, masked_confidence.size(-1))
         labels_flat = labels.view(-1)
         loss = F.cross_entropy(confidence_flat, labels_flat, reduction="mean")
         print("\nCross-Entropy Loss:", loss.item())
