@@ -160,15 +160,11 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
 def test(loader, net, criterion, device):
     n_batches = len(loader) // 11
     train_loader=islice(loader, n_batches)
-    VOC_CLASSES = [
-    "background", "aeroplane", "bicycle", "bird", "boat",
-    "bottle", "bus", "car", "cat", "chair",
-    "cow", "diningtable", "dog", "horse", "motorbike",
-    "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"
-    ]
-    
-    net = create_mobilenetv2_ssd_lite(len(VOC_CLASSES), is_test=True)
-    net.load(torch.load("models/mb2-ssd-lite-mp-0_686.pth"))
+    device = torch.device("cuda")
+    num_classes = 21 
+    net = create_mobilenetv2_ssd_lite(num_classes, is_test=True)
+    net.load_state_dict(torch.load("models/mb2-ssd-lite-mp-0_686.pth", map_location=device))
+    net = net.to(device)
     num_params = sum(p.numel() for p in net.parameters())
     print(f"Total parameters: {num_params}")
     # print("Number of samples in dataset:", len(train_loader.dataset))
