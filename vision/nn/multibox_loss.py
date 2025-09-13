@@ -42,6 +42,7 @@ class MultiboxLoss(nn.Module):
         print("labels",labels)
         print("labels",labels.shape)
         print(30*"----")
+        print("confidence",confidence.shape)
         pred_classes = torch.argmax(confidence, dim=2)
         print("pred_classes",pred_classes)
         print("pred_classes",pred_classes.shape)
