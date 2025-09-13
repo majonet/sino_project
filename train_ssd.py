@@ -166,7 +166,7 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     # print(loss)
     print("pass")
 def test(loader, net, criterion, device):
-    n_batches = len(loader) // 11*15
+    n_batches = len(loader) // (11*15)
     train_loader=islice(loader, n_batches)
     # device = torch.device("cuda")
     num_classes = 21 
