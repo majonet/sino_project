@@ -39,6 +39,7 @@ class MultiboxLoss(nn.Module):
 
         confidence = confidence[mask, :]
         #//////////////////////////////////////////////////////
+        print(30*"----")
         pred_classes = torch.argmax(confidence, dim=2)
         correct = (pred_classes == labels)
         print("\nCorrect mask:\n", correct)
@@ -46,9 +47,9 @@ class MultiboxLoss(nn.Module):
         print("\nAccuracy:", accuracy)
         confidence_flat = confidence.view(-1, confidence.size(-1))
         labels_flat = labels.view(-1)
-        
         loss = F.cross_entropy(confidence_flat, labels_flat, reduction="mean")
         print("\nCross-Entropy Loss:", loss.item())
+        print(30*"----")
         #/////////////////////////////////////////////////////
         classification_loss = F.cross_entropy(confidence.reshape(-1, num_classes), labels[mask], size_average=False)
         pos_mask = labels > 0
