@@ -169,6 +169,8 @@ def test(loader, net, criterion, device):
     
     net = create_mobilenetv2_ssd_lite(len(VOC_CLASSES), is_test=True)
     net.load(torch.load("models/mb2-ssd-lite-mp-0_686.pth"))
+    num_params = sum(p.numel() for p in net.parameters())
+    print(f"Total parameters: {num_params}")
     # print("Number of samples in dataset:", len(train_loader.dataset))
     print("Number of batches per epoch:", n_batches)
     net.eval()
