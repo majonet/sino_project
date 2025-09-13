@@ -39,10 +39,12 @@ class MultiboxLoss(nn.Module):
 
         # confidence = confidence[mask, :]
         #//////////////////////////////////////////////////////
+        print("confidence",confidence)
         print(30*"----")
         pred_classes = torch.argmax(confidence, dim=2)
+        print("pred_classes",pred_classes)
         correct = (pred_classes == labels)
-        print("\nCorrect mask:\n", correct)
+        print("\nCorrect mask:\n", correct.shape)
         accuracy = correct.sum().item() / correct.numel()
         print("\nAccuracy:", accuracy)
         confidence_flat = confidence.view(-1, confidence.size(-1))
