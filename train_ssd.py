@@ -171,6 +171,7 @@ def evaluate(loader):
                 
                 # --- predictions from model ---
                 # NOTE: this returns labels + probs (softmax scores)
+                print(img_test.shape)
                 boxes, labels, probs = predictor.predict(img_test, top_k=10, prob_threshold=0.05)
                 print(boxes)
                 print(labels)
