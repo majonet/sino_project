@@ -172,6 +172,9 @@ def evaluate(loader):
                 # --- predictions from model ---
                 # NOTE: this returns labels + probs (softmax scores)
                 boxes, labels, probs = predictor.predict(img_test, top_k=10, prob_threshold=0.05)
+                print(boxes)
+                print(labels)
+                print(probs)
                 pred_classes = labels.cpu().numpy().tolist()
             
                 # print(labels)
