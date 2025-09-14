@@ -142,19 +142,20 @@ def evaluate(loader):
             # Draw rectangle
             img_test=np.transpose(img_test, (1, 2, 0))
             print(img_test.shape)
-            cv2.rectangle(img_test, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            print(cls_id)
+            # cv2.rectangle(img_test, (x1, y1), (x2, y2), (0, 255, 0), 2)
         
             # Put label text
-            label_name = VOC_CLASSES[cls_id] if cls_id < len(VOC_CLASSES) else str(cls_id)
-            cv2.putText(img_test, label_name, (x1, y1 - 5),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 1)
+            # label_name = VOC_CLASSES[cls_id] if cls_id < len(VOC_CLASSES) else str(cls_id)
+            # cv2.putText(img_test, label_name, (x1, y1 - 5),
+            #             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 1)
         
         # Show image
-        plt.figure(figsize=(10, 8))
-        plt.imshow(cv2.cvtColor(img_test, cv2.COLOR_BGR2RGB))  # convert BGR→RGB for matplotlib
-        plt.axis("off")
-        plt.title("Ground Truth Annotations")
-        plt.show()
+        # plt.figure(figsize=(10, 8))
+        # plt.imshow(cv2.cvtColor(img_test, cv2.COLOR_BGR2RGB))  # convert BGR→RGB for matplotlib
+        # plt.axis("off")
+        # plt.title("Ground Truth Annotations")
+        # plt.show()
 
 
 def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
