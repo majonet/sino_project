@@ -128,10 +128,9 @@ def evaluate(loader):
         images=images.tolist()
         boxes=boxes.tolist()
         labels=labels.tolist()
-        img_test = images[hj].copy()  # copy so original isn't modified
-        # Example annotation list (already given)
-        # anno =annotations[hj]
-        for k,ann in enumerate(boxes):
+        img_test = images[hj].copy() 
+        anno =boxes[hj]
+        for k,ann in enumerate(anno):
             cls_id = labels[k]
             print(ann)
             x1, y1, x2, y2 =ann
