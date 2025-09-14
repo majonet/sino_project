@@ -135,16 +135,19 @@ def evaluate(loader):
         img_test = images[hj].copy() 
         img_test = np.array(img_test)
         anno =boxes[hj]
-        labels=labels[hj]
-        for k,ann in enumerate(anno):
-            cls_id = labels[k]
-            print(ann)
-            x1, y1, x2, y2 =ann
+        labels_=labels[hj]
+        print(len(labels_))
+        unique_values = list(set(labels_))
+        print(unique_values)
+        # for k,ann in enumerate(anno):
+        #     cls_id = labels[k]
+        #     print(ann)
+        #     x1, y1, x2, y2 =ann
         
-            # Draw rectangle
-            img_test=np.transpose(img_test, (1, 2, 0))
-            print(img_test.shape)
-            print(cls_id)
+        #     # Draw rectangle
+        #     img_test=np.transpose(img_test, (1, 2, 0))
+        #     print(img_test.shape)
+        #     print(cls_id)
             # cv2.rectangle(img_test, (x1, y1), (x2, y2), (0, 255, 0), 2)
         
             # Put label text
