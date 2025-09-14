@@ -122,7 +122,7 @@ def evaluate(loader):
             "cow", "diningtable", "dog", "horse", "motorbike",
             "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor" ]
         # Example image
-   for i, data in enumerate(train_loader):
+   for i, data in enumerate(loader):
         images, boxes , labels = data
         hj = i
         images=images.tolist()
