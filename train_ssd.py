@@ -262,7 +262,7 @@ def test(loader, net, criterion, device):
     n_batches = len(loader) // (11*15*4*4)
     train_loader=islice(loader, n_batches)
     # device = torch.device("cuda")
-    num_classes = 2 
+    num_classes = 21
     net = create_mobilenetv2_ssd_lite(num_classes, is_test=True)
     net.load_state_dict(torch.load("/kaggle/input/python-torch-files/mb2-ssd-lite-Epoch-5-Loss-22.16368144947094.pth", map_location=device))
     net = net.to(device)
