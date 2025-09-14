@@ -26,7 +26,8 @@ from vision.ssd.data_preprocessing import TrainAugmentation, TestTransform
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+import cv2
+import matplotlib.pyplot as plt
 # Usage example
 # confidence, locations = net(images)
 # regression_loss, classification_loss = criterion(confidence, locations, labels, boxes)
@@ -114,6 +115,38 @@ DEVICE = torch.device("cuda:0" if torch.cuda.is_available() and args.use_cuda el
 if args.use_cuda and torch.cuda.is_available():
     torch.backends.cudnn.benchmark = True
     logging.info("Use Cuda.")
+def evaluate(loader):
+   VOC_CLASSES=VOC_CLASSES = [
+            "background", "aeroplane", "bicycle", "bird", "boat",
+            "bottle", "bus", "car", "cat", "chair",
+            "cow", "diningtable", "dog", "horse", "motorbike",
+            "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor" ]
+        # Example image
+   for i, data in enumerate(train_loader):
+        images, boxes , labels = data
+        hj = i
+        img_test = images[hj].copy()  # copy so original isn't modified
+        
+        # Example annotation list (already given)
+        anno =annotations[hj]
+        for k,ann in enumerate(boxes):
+            cls_id = labels[k]
+            x1, y1, x2, y2 =ann
+        
+            # Draw rectangle
+            cv2.rectangle(img_test, (x1, y1), (x2, y2), (0, 255, 0), 2)
+        
+            # Put label text
+            label_name = VOC_CLASSES[cls_id] if cls_id < len(VOC_CLASSES) else str(cls_id)
+            cv2.putText(img_test, label_name, (x1, y1 - 5),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 1)
+        
+        # Show image
+        plt.figure(figsize=(10, 8))
+        plt.imshow(cv2.cvtColor(img_test, cv2.COLOR_BGR2RGB))  # convert BGR→RGB for matplotlib
+        plt.axis("off")
+        plt.title("Ground Truth Annotations")
+        plt.show()
 
 
 def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
@@ -166,6 +199,7 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     # print(loss)
     print("pass")
 def test(loader, net, criterion, device):
+    evaluate(loader)
     n_batches = len(loader) // (11*15*4*4)
     train_loader=islice(loader, n_batches)
     # device = torch.device("cuda")
