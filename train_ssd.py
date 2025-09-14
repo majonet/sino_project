@@ -125,8 +125,10 @@ def evaluate(loader):
    for i, data in enumerate(train_loader):
         images, boxes , labels = data
         hj = i
+        images=images.tolist()
+        boxes=boxes.tolist()
+        labels=labels.tolist()
         img_test = images[hj].copy()  # copy so original isn't modified
-        
         # Example annotation list (already given)
         anno =annotations[hj]
         for k,ann in enumerate(boxes):
