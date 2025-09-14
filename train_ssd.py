@@ -28,6 +28,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import cv2
 import matplotlib.pyplot as plt
+import numpy as np
 # Usage example
 # confidence, locations = net(images)
 # regression_loss, classification_loss = criterion(confidence, locations, labels, boxes)
@@ -129,6 +130,7 @@ def evaluate(loader):
         boxes=boxes.tolist()
         labels=labels.tolist()
         img_test = images[hj].copy() 
+        img_test = np.array(img_test)
         anno =boxes[hj]
         for k,ann in enumerate(anno):
             cls_id = labels[k]
