@@ -124,6 +124,8 @@ def evaluate(loader):
             "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor" ]
         # Example image
    for i, data in enumerate(loader):
+        imgh=cv2.imread("/kaggle/input/python-torch-files/Leo_Messi_(cropped).jpg")
+        plt.imshow(imgh)
         images, boxes , labels = data
         hj = i
         images=images.tolist()
