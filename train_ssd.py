@@ -133,6 +133,7 @@ def evaluate(loader):
         # anno =annotations[hj]
         for k,ann in enumerate(boxes):
             cls_id = labels[k]
+            print(ann)
             x1, y1, x2, y2 =ann
         
             # Draw rectangle
