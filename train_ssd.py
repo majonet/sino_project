@@ -116,7 +116,7 @@ DEVICE = torch.device("cuda:0" if torch.cuda.is_available() and args.use_cuda el
 if args.use_cuda and torch.cuda.is_available():
     torch.backends.cudnn.benchmark = True
     logging.info("Use Cuda.")
-def evaluate(loader):
+def chek_data(loader):
    VOC_CLASSES=VOC_CLASSES = [
             "background", "aeroplane", "bicycle", "bird", "boat",
             "bottle", "bus", "car", "cat", "chair",
@@ -125,8 +125,6 @@ def evaluate(loader):
         # Example image
     
    for i, data in enumerate(loader):
-        imgh=cv2.imread("/kaggle/input/python-torch-files/Leo_Messi_(cropped).jpg")
-        plt.imshow(imgh)
         images, boxes , labels = data
         hj = i
         images=images.tolist()
@@ -139,28 +137,76 @@ def evaluate(loader):
         print(len(labels_))
         unique_values = list(set(labels_))
         print(unique_values)
-        # for k,ann in enumerate(anno):
-        #     cls_id = labels[k]
-        #     print(ann)
-        #     x1, y1, x2, y2 =ann
+def evaluate(loader):   
+        model_path_1="/kaggle/input/python-torch-files/mb2-ssd-lite-mp-0_686.pth"
+        device = torch.device("cpu")
+        num_classes = 21
+        net = create_mobilenetv2_ssd_lite(num_classes, is_test=True)
+        net.load_state_dict(torch.load(model_path_1, map_location=device))
+        net = net.to(device)
+        predictor = create_mobilenetv2_ssd_lite_predictor(net, candidate_size=20, device=device)
+        VOC_CLASSES = [
+            "background", "aeroplane", "bicycle", "bird", "boat",
+            "bottle", "bus", "car", "cat", "chair",
+            "cow", "diningtable", "dog", "horse", "motorbike",
+            "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"
+        ]
+        # VOC_CLASSES = ["background","person"]
         
-        #     # Draw rectangle
-        #     img_test=np.transpose(img_test, (1, 2, 0))
-        #     print(img_test.shape)
-        #     print(cls_id)
-            # cv2.rectangle(img_test, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        
-            # Put label text
-            # label_name = VOC_CLASSES[cls_id] if cls_id < len(VOC_CLASSES) else str(cls_id)
-            # cv2.putText(img_test, label_name, (x1, y1 - 5),
-            #             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 1)
-        
-        # Show image
-        # plt.figure(figsize=(10, 8))
-        # plt.imshow(cv2.cvtColor(img_test, cv2.COLOR_BGR2RGB))  # convert BGR→RGB for matplotlib
-        # plt.axis("off")
-        # plt.title("Ground Truth Annotations")
-        # plt.show()
+        num_images = 4  # evaluate on 20 images
+        correct = 0
+        total_pre= 0
+        total_label=0
+        all_losses = []
+            
+        for i, data in enumerate(loader):
+                images, boxes_ , labels_ = data
+                img_test = images[i].copy()
+                img_test = np.transpose(img_test, (1, 2, 0))
+                
+                anno = boxes_[i]
+                labels_=labels_[i]
+                # --- ground truth classes ---
+                gt_classes = [ann for ann in anno]
+                
+                # --- predictions from model ---
+                # NOTE: this returns labels + probs (softmax scores)
+                boxes, labels, probs = predictor.predict(img_test, top_k=10, prob_threshold=0.05)
+                pred_classes = labels.cpu().numpy().tolist()
+            
+                # print(labels)
+                # print(gt_classes)
+                for cls in range(len(gt_classes)):
+                  if cls < len(pred_classes):   # <<< prevent index out of range
+                    if pred_classes[cls] == gt_classes[cls]:  # simple accuracy check
+                        correct += 1
+            
+                    # if we have probs, compute NLL loss (-log p)
+                    if len(probs) > 0:
+                        # take max prob for this class (if predicted)
+                        indices = (labels == gt_classes[cls]).nonzero(as_tuple=True)[0]
+                        # print(indices)
+                        if len(indices) > 0:
+                            p = probs[indices[0]]
+                            loss_val = -torch.log(p + 1e-8)
+                            all_losses.append(loss_val.item())
+            
+                total_pre  += len(pred_classes)
+                total_label+=len(gt_classes)
+        print("correct",correct)
+        print("total",total_pre,total_label)
+        accuracy_pre = correct / total_pre if total_pre > 0 else 0
+        print(f"Classification Accuracy over {num_images} images: {accuracy_pre:.3f}")
+        accuracy_label = correct / total_label if total_label > 0 else 0
+        print(f"Classification Accuracy over label images: {accuracy_label:.3f}")
+        print(accuracy_pre*accuracy_label*(100)*prob_threshold)
+            
+        # --- Average classification loss ---
+        if len(all_losses) > 0:
+            avg_loss = sum(all_losses) / len(all_losses)
+            print(f"Average Classification Loss (approx NLL) over {num_images} images: {avg_loss:.4f}")
+        else:
+            print("No classification losses computed (no predictions above threshold).")
 
 
 def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
@@ -213,14 +259,14 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     # print(loss)
     print("pass")
 def test(loader, net, criterion, device):
-    evaluate(loader)
     n_batches = len(loader) // (11*15*4*4)
     train_loader=islice(loader, n_batches)
     # device = torch.device("cuda")
-    num_classes = 21 
+    num_classes = 2 
     net = create_mobilenetv2_ssd_lite(num_classes, is_test=True)
     net.load_state_dict(torch.load("/kaggle/input/python-torch-files/mb2-ssd-lite-Epoch-5-Loss-22.16368144947094.pth", map_location=device))
     net = net.to(device)
+    evaluate(train_loader)
     num_params = sum(p.numel() for p in net.parameters())
     print(f"Total parameters: {num_params}")
     # print("Number of samples in dataset:", len(train_loader.dataset))
