@@ -161,7 +161,7 @@ def evaluate(loader):
             
         for i, data in enumerate(loader):
                 images, boxes_ , labels_ = data
-                img_test =images[i].permute(1, 2, 0).cpu().numpy()
+                img_test =images[i].cpu().numpy()
                 img_test = np.transpose(img_test, (1, 2, 0))
                 
                 anno = boxes_[i]
