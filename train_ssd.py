@@ -123,6 +123,7 @@ def evaluate(loader):
             "cow", "diningtable", "dog", "horse", "motorbike",
             "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor" ]
         # Example image
+    
    for i, data in enumerate(loader):
         imgh=cv2.imread("/kaggle/input/python-torch-files/Leo_Messi_(cropped).jpg")
         plt.imshow(imgh)
@@ -134,6 +135,7 @@ def evaluate(loader):
         img_test = images[hj].copy() 
         img_test = np.array(img_test)
         anno =boxes[hj]
+        labels=labels[hj]
         for k,ann in enumerate(anno):
             cls_id = labels[k]
             print(ann)
