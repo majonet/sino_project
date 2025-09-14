@@ -28,7 +28,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import cv2
 import matplotlib.pyplot as plt
-import numpy as np
+import numpy 
 # Usage example
 # confidence, locations = net(images)
 # regression_loss, classification_loss = criterion(confidence, locations, labels, boxes)
@@ -161,8 +161,8 @@ def evaluate(loader):
             
         for i, data in enumerate(loader):
                 images, boxes_ , labels_ = data
-                img_test =images[i].cpu()
-                img_test = np.transpose(img_test, (1, 2, 0))
+                img_test =images[i].numpy()
+                img_test = numpy.transpose(img_test, (1, 2, 0))
                 
                 anno = boxes_[i]
                 labels_=labels_[i]
