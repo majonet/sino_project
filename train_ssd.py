@@ -222,7 +222,7 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     running_loss = 0.0
     running_regression_loss = 0.0
     running_classification_loss = 0.0
-    n_batches = len(loader) // (2)
+    n_batches = len(loader)
     print("train_batch",n_batches)
     loader=islice(loader, n_batches)
     for i, data in enumerate(loader):
