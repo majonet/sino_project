@@ -154,7 +154,7 @@ def load_labels(annotation_path):
                 "bbox": [xmin, ymin, xmax, ymax]
             })
         return labels
-def eval_test():
+def eval_test(predictor):
     #define_data
     dataset_dir = Path('/kaggle/input/pascal-voc-2012-dataset/VOC2012_train_val/VOC2012_train_val')
     image_dir = dataset_dir / 'JPEGImages'
@@ -168,13 +168,12 @@ def eval_test():
     total_label=0
     all_losses = []
     prob_threshold=0.25
-    model_path_1="/kaggle/input/python-torch-files/mb2-ssd-lite-mp-0_686.pth"
-    device = torch.device("cpu")
-    num_classes = 21
-    net = create_mobilenetv2_ssd_lite(num_classes, is_test=True)
-    net.load_state_dict(torch.load(model_path_1, map_location=device))
-    net = net.to(device)
-    predictor = create_mobilenetv2_ssd_lite_predictor(net, candidate_size=20, device=device)
+    # model_path_1="/kaggle/input/python-torch-files/mb2-ssd-lite-mp-0_686.pth"
+    # device = torch.device("cpu")
+    # num_classes = 21
+    # net = create_mobilenetv2_ssd_lite(num_classes, is_test=True)
+    # net.load_state_dict(torch.load(model_path_1, map_location=device))
+    # net = net.to(device)
     for hj in range(num_images):
             img_test = images[hj].copy()
             print("img_test",img_test.shape)
@@ -257,9 +256,9 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
 
 
 def test(loader, net, criterion, device):
-    # predictor = create_mobilenetv2_ssd_lite_predictor(net, candidate_size=20, device=device)
+    predictor = create_mobilenetv2_ssd_lite_predictor(net, candidate_size=20, device=device)
     print("ok_1")
-    eval_test()
+    eval_test(predictor)
     n_batches = len(loader) // (11*15*4)
     loader=islice(loader, n_batches)
     net.eval()
