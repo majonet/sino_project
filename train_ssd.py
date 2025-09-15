@@ -172,10 +172,11 @@ def eval_test(predictor):
             img_test = images[hj].copy()
             anno = annotations[hj]
             gt_classes = [ann["class_id"] for ann in anno]
+            print("ok_2")
             boxes, labels, probs = predictor.predict(img_test, top_k=10, prob_threshold=prob_threshold)
+            print("ok_3")
             pred_classes = labels.cpu().numpy().tolist()
-            print(labels)
-            print(gt_classes)
+            print("ok_4")
             for cls in range(len(gt_classes)):
               if cls < len(pred_classes):   # <<< prevent index out of range
                 if pred_classes[cls] == gt_classes[cls]:  # simple accuracy check
@@ -248,7 +249,8 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
 
 def test(loader, net, criterion, device):
     predictor = create_mobilenetv2_ssd_lite_predictor(net, candidate_size=20, device=device)
-    # eval_test(predictor)
+    print("ok_1")
+    eval_test(predictor)
     n_batches = len(loader) // (11*15*4)
     loader=islice(loader, n_batches)
     net.eval()
