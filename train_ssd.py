@@ -192,7 +192,20 @@ def eval_test(predictor):
         
             total_pre  += len(pred_classes)
             total_label+=len(gt_classes)
-
+    print("correct",correct)
+    print("total",total_pre,total_label)
+    accuracy_pre = correct / total_pre if total_pre > 0 else 0
+    print(f"Classification Accuracy over {num_images} images: {accuracy_pre:.3f}")
+    accuracy_label = correct / total_label if total_label > 0 else 0
+    print(f"Classification Accuracy over label images: {accuracy_label:.3f}")
+    print(accuracy_pre*accuracy_label*(100)*prob_threshold)
+    
+    # --- Average classification loss ---
+    if len(all_losses) > 0:
+        avg_loss = sum(all_losses) / len(all_losses)
+        print(f"Average Classification Loss (approx NLL) over {num_images} images: {avg_loss:.4f}")
+    else:
+        print("No classification losses computed (no predictions above threshold).")
 #//////////////////////////////////////////////////////////////////////////////////////////////////////
 def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     net.train(True)
