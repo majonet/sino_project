@@ -37,30 +37,8 @@ class MultiboxLoss(nn.Module):
             loss = -F.log_softmax(confidence, dim=2)[:, :, 0]
             mask = box_utils.hard_negative_mining(loss, labels, self.neg_pos_ratio)
 
-        # confidence = confidence[mask, :]
-        #//////////////////////////////////////////////////////
-        # فقط همان prior هایی که در mask هستند
-        masked_labels = labels[mask]                 # shape: [num_selected]
-        masked_confidence = confidence[mask, :]      # shape: [num_selected, num_classes]
-        
-        # پیش‌بینی کلاس‌ها روی ماسک
-        pred_classes = torch.argmax(masked_confidence, dim=1)
-        
-        # دقت روی ماسک
-        correct = (pred_classes == masked_labels)
-        accuracy = correct.sum().item() / correct.numel()
-        
-        print("Masked labels shape:", masked_labels.shape)
-        print("Masked confidence shape:", masked_confidence.shape)
-        print("Masked pred_classes shape:", pred_classes.shape)
-        print("Masked Accuracy:", accuracy)
-        
-        # Cross-Entropy فقط روی prior های انتخاب شده
-        classification_loss = F.cross_entropy(masked_confidence, masked_labels, reduction="mean")
-        print("Masked Cross-Entropy Loss:", classification_loss.item())
-
-        #/////////////////////////////////////////////////////
-        # classification_loss = F.cross_entropy(confidence[mask, :].reshape(-1, num_classes), labels[mask], size_average=False)
+        confidence = confidence[mask, :]
+        classification_loss = F.cross_entropy(confidence.reshape(-1, num_classes), labels[mask], size_average=False)
         pos_mask = labels > 0
         predicted_locations = predicted_locations[pos_mask, :].reshape(-1, 4)
         gt_locations = gt_locations[pos_mask, :].reshape(-1, 4)
