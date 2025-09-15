@@ -154,7 +154,7 @@ def load_labels(annotation_path):
                 "bbox": [xmin, ymin, xmax, ymax]
             })
         return labels
-def eval_test(predictor):
+def eval_test():
     #define_data
     dataset_dir = Path('/kaggle/input/pascal-voc-2012-dataset/VOC2012_train_val/VOC2012_train_val')
     image_dir = dataset_dir / 'JPEGImages'
@@ -178,10 +178,10 @@ def eval_test(predictor):
     for hj in range(num_images):
             img_test = images[hj].copy()
             print("img_test",img_test.shape)
-            print(img_test.type)
             anno = annotations[hj]
             gt_classes = [ann["class_id"] for ann in anno]
             print("ok_2")
+            print("predictor",predictor)
             boxes, labels, probs = predictor.predict(img_test, top_k=10, prob_threshold=prob_threshold)
             print("ok_3")
             pred_classes = labels.cpu().numpy().tolist()
@@ -257,9 +257,9 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
 
 
 def test(loader, net, criterion, device):
-    predictor = create_mobilenetv2_ssd_lite_predictor(net, candidate_size=20, device=device)
+    # predictor = create_mobilenetv2_ssd_lite_predictor(net, candidate_size=20, device=device)
     print("ok_1")
-    eval_test(predictor)
+    eval_test()
     n_batches = len(loader) // (11*15*4)
     loader=islice(loader, n_batches)
     net.eval()
