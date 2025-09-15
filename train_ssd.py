@@ -258,7 +258,7 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
 def test(loader, net, criterion, device):
     predictor = create_mobilenetv2_ssd_lite_predictor(net, candidate_size=20, device=device)
     print("ok_1")
-    # eval_test(predictor)
+    eval_test(predictor)
     n_batches = len(loader) // (11*15*4)
     loader=islice(loader, n_batches)
     net.eval()
