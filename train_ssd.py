@@ -178,6 +178,7 @@ def eval_test(predictor):
     for hj in range(num_images):
             img_test = images[hj].copy()
             print("img_test",img_test.shape)
+            print(img_test.type)
             anno = annotations[hj]
             gt_classes = [ann["class_id"] for ann in anno]
             print("ok_2")
