@@ -53,11 +53,7 @@ class Compose(object):
 
     def __call__(self, img, boxes=None, labels=None):
         for t in self.transforms:
-            if len(boxes.shape)>1:
-                # try:
-                    img, boxes, labels = t(img, boxes, labels)
-                # except:
-                #     print(t, boxes.shape, labels)
+            img, boxes, labels = t(img, boxes, labels)
         return img, boxes, labels
 
 
