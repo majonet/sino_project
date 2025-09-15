@@ -222,7 +222,8 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     running_loss = 0.0
     running_regression_loss = 0.0
     running_classification_loss = 0.0
-    n_batches = len(loader) // (11)
+    n_batches = len(loader) // (2)
+    print("train_batch",n_batches)
     loader=islice(loader, n_batches)
     for i, data in enumerate(loader):
         images, boxes, labels = data
@@ -258,7 +259,8 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
 def test(loader, net, criterion, device):
     predictor = create_mobilenetv2_ssd_lite_predictor(net, candidate_size=20, device=device)
     eval_test(predictor)
-    n_batches = len(loader) // (11*15*4)
+    n_batches = len(loader) // (4)
+    print("test_batches",n_batches)
     loader=islice(loader, n_batches)
     net.eval()
     running_loss = 0.0
