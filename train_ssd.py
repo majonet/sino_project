@@ -167,7 +167,7 @@ def eval_test(predictor):
     total_pre= 0
     total_label=0
     all_losses = []
-    prob_threshold=0.25
+    prob_threshold=0.01
     # model_path_1="/kaggle/input/python-torch-files/mb2-ssd-lite-mp-0_686.pth"
     # device = torch.device("cpu")
     # num_classes = 21
