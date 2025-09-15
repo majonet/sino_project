@@ -170,6 +170,7 @@ def eval_test(predictor):
     prob_threshold=0.25
     for hj in range(num_images):
             img_test = images[hj].copy()
+            print("img_test",img_test.shape)
             anno = annotations[hj]
             gt_classes = [ann["class_id"] for ann in anno]
             print("ok_2")
