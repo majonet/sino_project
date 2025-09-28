@@ -115,12 +115,13 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     running_loss = 0.0
     running_regression_loss = 0.0
     running_classification_loss = 0.0
+    my_list=[]
     for i, data in enumerate(loader):
         images, boxes, labels = data
         images = images.to(device)
         boxes = boxes.to(device)
         labels = labels.to(device)
-
+        my_list.append(labels)
         optimizer.zero_grad()
         confidence, locations = net(images)
         regression_loss, classification_loss = criterion(confidence, locations, labels, boxes)  # TODO CHANGE BOXES
@@ -145,7 +146,7 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
             running_regression_loss = 0.0
             running_classification_loss = 0.0
 
-
+print("my_list",my_list)
 def test(loader, net, criterion, device):
     n_batches = len(loader) // 2640 # take one quarter
     loader=islice(loader, n_batches)
