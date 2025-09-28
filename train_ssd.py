@@ -3,7 +3,7 @@ import os
 import logging
 import sys
 import itertools
-
+from itertools import islice
 import torch
 from torch.utils.data import DataLoader, ConcatDataset
 from torch.optim.lr_scheduler import CosineAnnealingLR, MultiStepLR
@@ -109,6 +109,8 @@ if args.use_cuda and torch.cuda.is_available():
 
 
 def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
+    n_batches = len(loader) // 250   # take one quarter
+    loader=islice(loader, n_batches)
     net.train(True)
     running_loss = 0.0
     running_regression_loss = 0.0
@@ -145,6 +147,8 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
 
 
 def test(loader, net, criterion, device):
+    n_batches = len(loader) // 250   # take one quarter
+    loader=islice(loader, n_batches)
     net.eval()
     running_loss = 0.0
     running_regression_loss = 0.0
