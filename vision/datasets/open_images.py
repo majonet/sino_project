@@ -94,6 +94,7 @@ class OpenImagesDataset:
 
     def _read_image(self, image_id):
         image_file = self.root / self.dataset_type / f"{image_id}.jpg"
+        print("image_file",image_file)
         image = cv2.imread(str(image_file))
         if image.shape[2] == 1:
             image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
