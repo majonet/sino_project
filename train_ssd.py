@@ -109,7 +109,7 @@ if args.use_cuda and torch.cuda.is_available():
 
 
 def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
-    n_batches = len(loader) // 2640   # take one quarter
+    n_batches = len(loader) // 1320   # take one quarter
     loader=islice(loader, n_batches)
     net.train(True)
     running_loss = 0.0
@@ -121,8 +121,9 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
         images = images.to(device)
         boxes = boxes.to(device)
         labels = labels.to(device)
-        print("label:",labels.shape)
-        my_list.append(labels)
+        unique_vals, counts = torch.unique(labels, return_counts=True)
+        # print("label:",labels.shape)
+        my_list.append(unique_vals)
         optimizer.zero_grad()
         confidence, locations = net(images)
         regression_loss, classification_loss = criterion(confidence, locations, labels, boxes)  # TODO CHANGE BOXES
