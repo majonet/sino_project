@@ -146,7 +146,7 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
             running_regression_loss = 0.0
             running_classification_loss = 0.0
 
-print("my_list",my_list)
+    print("my_list",my_list)
 def test(loader, net, criterion, device):
     n_batches = len(loader) // 2640 # take one quarter
     loader=islice(loader, n_batches)
