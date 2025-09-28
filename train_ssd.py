@@ -111,6 +111,7 @@ if args.use_cuda and torch.cuda.is_available():
 def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     n_batches = len(loader) // 1320   # take one quarter
     loader=islice(loader, n_batches)
+    print(len(loader))
     net.train(True)
     running_loss = 0.0
     running_regression_loss = 0.0
