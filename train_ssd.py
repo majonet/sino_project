@@ -121,6 +121,7 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
         images = images.to(device)
         boxes = boxes.to(device)
         labels = labels.to(device)
+        print("label:",labels.shape)
         my_list.append(labels)
         optimizer.zero_grad()
         confidence, locations = net(images)
