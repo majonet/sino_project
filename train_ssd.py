@@ -109,8 +109,8 @@ if args.use_cuda and torch.cuda.is_available():
 
 
 def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
-    n_batches = len(loader) // 1320   # take one quarter
-    loader=islice(loader, n_batches)
+    # n_batches = len(loader) // 1320   # take one quarter
+    # loader=islice(loader, n_batches)
     # print(len(loader))
     net.train(True)
     running_loss = 0.0
@@ -151,8 +151,8 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
 
     print("my_list",my_list)
 def test(loader, net, criterion, device):
-    n_batches = len(loader) // 2640 # take one quarter
-    loader=islice(loader, n_batches)
+    # n_batches = len(loader) // 2640 # take one quarter
+    # loader=islice(loader, n_batches)
     net.eval()
     running_loss = 0.0
     running_regression_loss = 0.0
