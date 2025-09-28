@@ -4,10 +4,10 @@ import logging
 import sys
 import itertools
 
-
 import torch
 from torch.utils.data import DataLoader, ConcatDataset
 from torch.optim.lr_scheduler import CosineAnnealingLR, MultiStepLR
+
 from vision.utils.misc import str2bool, Timer, freeze_net_layers, store_labels
 from vision.ssd.ssd import MatchPrior
 from vision.ssd.vgg_ssd import create_vgg_ssd
@@ -23,19 +23,6 @@ from vision.ssd.config import vgg_ssd_config
 from vision.ssd.config import mobilenetv1_ssd_config
 from vision.ssd.config import squeezenet_ssd_config
 from vision.ssd.data_preprocessing import TrainAugmentation, TestTransform
-#////////////////////////////////////////////////////////////////////
-from vision.ssd.mobilenet_v2_ssd_lite import create_mobilenetv2_ssd_lite, create_mobilenetv2_ssd_lite_predictor
-from itertools import islice
-import numpy as np 
-import pandas as pd 
-import torch
-from pathlib import Path
-import cv2
-import numpy as np
-from sklearn.metrics import precision_recall_fscore_support
-import xml.etree.ElementTree as ET
-import torch.nn.functional as F
-#///////////////////////////////////////////////////////////////////
 
 parser = argparse.ArgumentParser(
     description='Single Shot MultiBox Detector Training With Pytorch')
@@ -119,112 +106,13 @@ DEVICE = torch.device("cuda:0" if torch.cuda.is_available() and args.use_cuda el
 if args.use_cuda and torch.cuda.is_available():
     torch.backends.cudnn.benchmark = True
     logging.info("Use Cuda.")
-#////////////////////////////////////////////////////////////////////////////////////////////
-def load_image(img_path):
-    img = cv2.imread(str(img_path))
-    # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    return img
-def load_labels(annotation_path):
-        VOC_CLASSES = [
-        "background", "aeroplane", "bicycle", "bird", "boat",
-        "bottle", "bus", "car", "cat", "chair",
-        "cow", "diningtable", "dog", "horse", "motorbike",
-        "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor"
-           ] 
-        
-        class_to_idx = {cls_name: idx for idx, cls_name in enumerate(VOC_CLASSES)}
-    
-        tree = ET.parse(annotation_path)
-        root = tree.getroot()
-        labels = []
-        for obj in root.findall('object'):
-            class_name = obj.find('name').text.lower().strip()
-            if class_name not in class_to_idx:
-                continue  # skip unknown class
-            class_id = class_to_idx[class_name]
-    
-            bbox = obj.find('bndbox')
-            xmin = int(bbox.find('xmin').text)
-            ymin = int(bbox.find('ymin').text)
-            xmax = int(bbox.find('xmax').text)
-            ymax = int(bbox.find('ymax').text)
-    
-            labels.append({
-                "class_id": class_id,
-                "bbox": [xmin, ymin, xmax, ymax]
-            })
-        return labels
-def eval_test(predictor):
-    #define_data
-    dataset_dir = Path('/kaggle/input/pascal-voc-2012-dataset/VOC2012_train_val/VOC2012_train_val')
-    image_dir = dataset_dir / 'JPEGImages'
-    annotation_dir = dataset_dir / 'Annotations'
-    image_paths = list(image_dir.glob('*.jpg'))[:200]  # Use first 5 images
-    images = [load_image(img_path) for img_path in image_paths]
-    annotations = [load_labels(annotation_dir / (img_path.stem + '.xml')) for img_path in image_paths]
-    num_images = 200  # evaluate on 20 images
-    correct = 0
-    total_pre= 0
-    total_label=0
-    all_losses = []
-    prob_threshold=0.007
-    # model_path_1="/kaggle/input/python-torch-files/mb2-ssd-lite-mp-0_686.pth"
-    # device = torch.device("cpu")
-    # num_classes = 21
-    # net = create_mobilenetv2_ssd_lite(num_classes, is_test=True)
-    # net.load_state_dict(torch.load(model_path_1, map_location=device))
-    # net = net.to(device)
-    for hj in range(num_images):
-            img_test = images[hj].copy()
-            # print("img_test",img_test.shape)
-            anno = annotations[hj]
-            gt_classes = [ann["class_id"] for ann in anno]
-            # print("ok_2")
-            # print("predictor",predictor)
-            boxes, labels, probs = predictor.predict(img_test, top_k=10, prob_threshold=prob_threshold)
-            # print("ok_3")
-            pred_classes = labels.cpu().numpy().tolist()
-            # print("ok_4")
-            for cls in range(len(gt_classes)):
-              if cls < len(pred_classes):   # <<< prevent index out of range
-                if pred_classes[cls] == gt_classes[cls]:  # simple accuracy check
-                    correct += 1
-        
-                # if we have probs, compute NLL loss (-log p)
-                if len(probs) > 0:
-                    # take max prob for this class (if predicted)
-                    indices = (labels == gt_classes[cls]).nonzero(as_tuple=True)[0]
-                    # print(indices)
-                    if len(indices) > 0:
-                        p = probs[indices[0]]
-                        loss_val = -torch.log(p + 1e-8)
-                        all_losses.append(loss_val.item())
-        
-            total_pre  += len(pred_classes)
-            total_label+=len(gt_classes)
-    print("correct",correct)
-    print("total",total_pre,total_label)
-    accuracy_pre = correct / total_pre if total_pre > 0 else 0
-    print(f"Classification Accuracy over {num_images} images: {accuracy_pre:.3f}")
-    accuracy_label = correct / total_label if total_label > 0 else 0
-    print(f"Classification Accuracy over label images: {accuracy_label:.3f}")
-    print(accuracy_pre*accuracy_label*(100)*prob_threshold)
-    
-    # --- Average classification loss ---
-    if len(all_losses) > 0:
-        avg_loss = sum(all_losses) / len(all_losses)
-        print(f"Average Classification Loss (approx NLL) over {num_images} images: {avg_loss:.4f}")
-    else:
-        print("No classification losses computed (no predictions above threshold).")
-#//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     net.train(True)
     running_loss = 0.0
     running_regression_loss = 0.0
     running_classification_loss = 0.0
-    n_batches = len(loader)//(2)
-    print("train_batch",n_batches)
-    loader=islice(loader, n_batches)
     for i, data in enumerate(loader):
         images, boxes, labels = data
         images = images.to(device)
@@ -257,11 +145,6 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
 
 
 def test(loader, net, criterion, device):
-    predictor = create_mobilenetv2_ssd_lite_predictor(net, candidate_size=20, device=device)
-    eval_test(predictor)
-    n_batches = len(loader) // (8)
-    print("test_batches",n_batches)
-    loader=islice(loader, n_batches)
     net.eval()
     running_loss = 0.0
     running_regression_loss = 0.0
