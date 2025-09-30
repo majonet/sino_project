@@ -112,11 +112,6 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     # n_batches = len(loader) // 1320   # take one quarter
     # loader=islice(loader, n_batches)
     # print(len(loader))
-   
-    num_params = sum(p.numel() for p in net.parameters())
-    print(f"Total parameters: {num_params}")
-    num_trainable = sum(p.numel() for p in net.parameters() if p.requires_grad)
-    print(f"Trainable parameters: {num_trainable}")
     net.train(True)
     running_loss = 0.0
     running_regression_loss = 0.0
@@ -133,9 +128,11 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
         optimizer.zero_grad()
         confidence, locations = net(images)
         regression_loss, classification_loss = criterion(confidence, locations, labels, boxes)  # TODO CHANGE BOXES
-        print("classification_loss",classification_loss)
-        print("regression_loss",regression_loss)
+        print("classification_loss",classification_loss,"regression_loss",regression_loss)
+        
         loss = regression_loss + classification_loss
+        print("loss_sum:",loss)
+        print(30*"----")
         loss.backward()
         optimizer.step()
 
@@ -336,6 +333,10 @@ if __name__ == '__main__':
         sys.exit(1)
 
     logging.info(f"Start training from epoch {last_epoch + 1}.")
+    num_params = sum(p.numel() for p in net.parameters())
+    print(f"Total parameters: {num_params}")
+    num_trainable = sum(p.numel() for p in net.parameters() if p.requires_grad)
+    print(f"Trainable parameters: {num_trainable}")
     for epoch in range(last_epoch + 1, args.num_epochs):
         scheduler.step()
         train(train_loader, net, criterion, optimizer,
