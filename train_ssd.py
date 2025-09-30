@@ -112,6 +112,11 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
     # n_batches = len(loader) // 1320   # take one quarter
     # loader=islice(loader, n_batches)
     # print(len(loader))
+   
+    num_params = sum(p.numel() for p in net.parameters())
+    print(f"Total parameters: {num_params}")
+    num_trainable = sum(p.numel() for p in net.parameters() if p.requires_grad)
+    print(f"Trainable parameters: {num_trainable}")
     net.train(True)
     running_loss = 0.0
     running_regression_loss = 0.0
@@ -128,6 +133,8 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
         optimizer.zero_grad()
         confidence, locations = net(images)
         regression_loss, classification_loss = criterion(confidence, locations, labels, boxes)  # TODO CHANGE BOXES
+        print("classification_loss",classification_loss)
+        print("regression_loss",regression_loss)
         loss = regression_loss + classification_loss
         loss.backward()
         optimizer.step()
@@ -149,7 +156,7 @@ def train(loader, net, criterion, optimizer, device, debug_steps=100, epoch=-1):
             running_regression_loss = 0.0
             running_classification_loss = 0.0
 
-    print("my_list",my_list)
+    # print("my_list",my_list)
 def test(loader, net, criterion, device):
     # n_batches = len(loader) // 2640 # take one quarter
     # loader=islice(loader, n_batches)
