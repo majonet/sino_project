@@ -34,13 +34,20 @@ size_variance = 0.2
 #     SSDSpec(2, 10, SSDBoxSizes(162, 213), [1, 2, 1/2]),
 #     SSDSpec(1, 300, SSDBoxSizes(213, 264), [1, 2, 1/2])
 # ]
+# specs = [
+#     SSDSpec(19, 16, SSDBoxSizes(60, 30), [2, 3]),
+#     SSDSpec(10, 32, SSDBoxSizes(70, 150), [2, 3]),
+#     SSDSpec(5, 64, SSDBoxSizes(150, 195), [2, 3]),
+#     SSDSpec(3, 100, SSDBoxSizes(195, 240), [2, 3]),
+#     SSDSpec(2, 150, SSDBoxSizes(240, 285), [2, 3]),
+#     SSDSpec(1, 300, SSDBoxSizes(285, 330), [2, 3])
+# ]
 specs = [
-    SSDSpec(19, 16, SSDBoxSizes(60, 30), [2, 3]),
-    SSDSpec(10, 32, SSDBoxSizes(70, 150), [2, 3]),
-    SSDSpec(5, 64, SSDBoxSizes(150, 195), [2, 3]),
-    SSDSpec(3, 100, SSDBoxSizes(195, 240), [2, 3]),
-    SSDSpec(2, 150, SSDBoxSizes(240, 285), [2, 3]),
-    SSDSpec(1, 300, SSDBoxSizes(285, 330), [2, 3])
+    SSDSpec(19, 16, SSDBoxSizes(16, 32), [2, 3]),
+    SSDSpec(10, 32,  SSDBoxSizes(32, 64), [2, 3]),
+    SSDSpec(5, 64, SSDBoxSizes(64, 100), [2, 3]),
+    SSDSpec(3, 100, SSDBoxSizes(100, 160), [2, 3]),
+    SSDSpec(2, 150, SSDBoxSizes(160, 220), [2, 3]),
+    SSDSpec(1, 300, SSDBoxSizes(220, 300), [2, 3])
 ]
-
 priors = generate_ssd_priors(specs, image_size)
